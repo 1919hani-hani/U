@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>Discord Webhook 送信ツール</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
+        textarea, input[type="text"] { width: 100%; padding: 10px; margin: 5px 0; }
+        button { padding: 10px 20px; font-size: 16px; }
+        label { font-weight: bold; display: block; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Discord Webhook 送信ツール</h2>
+
+    <label for="webhook-url">Webhook URL</label>
+    <input type="text" id="webhook-url" placeholder="https://discord.com/api/webhooks/...">
+
+    <label>送信モード</label>
+    <input type="radio" name="mode" value="normal" checked> 通常メッセージのみ
+    <input type="radio" name="mode" value="embed"> 埋め込みのみ
+    <input type="radio" name="mode" value="both"> 両方送信
+
+    <label for="normal-message">通常メッセージ</label>
+    <textarea id="normal-message" rows="4"></textarea>
+
+    <label for="embed-message">埋め込みメッセージ</label>
+    <textarea id="embed-message" rows="4"></textarea>
+
+    <label for="image-url">埋め込み画像URL（任意）</label>
+    <input type="text" id="image-url" placeholder="https://example.com/image.png">
+
+    <button onclick="sendMessage()">送信</button>
+
+    <script>
+        function sendMessage() {
+            const url = document.getElementById("webhook-url").value.trim();
+            const normalText = document.getElementById("normal-message").value.trim();
+            const embedText = document.getElementById("embed-message").value.trim();
+            const imageUrl = document.getElementById("image-url").value.trim();
+            const mode = document.querySelector('input[name="mode"]:checked').value;
+
+            if (!url) {
+                alert("Webhook URLを入力してください。");
+                return;
+            }
+
+            const data = {};
+
+            if (mode === "normal" || mode === "both") {
+                if (normalText) {
+                    data.content = normalText;
+                }
+            }
+
+            if (mode === "embed" || mode === "both") {
+                if (embedText) {
+                    const embed = { description: embedText };
+                    if (imageUrl) {
+                        embed.image = { url: imageUrl };
+                    }
+                    data.embeds = [embed];
+                } else if (mode === "embed") {
+                    alert("埋め込み本文を入力してください。");
+                    return;
+                }
+            }
+
+            if (Object.keys(data).length === 0) {
+                alert("送信する内容がありません。");
+                return;
+            }
+
+            fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("メッセージを送信しました！");
+                    document.getElementById("normal-message").value = "";
+                    document.getElementById("embed-message").value = "";
+                    document.getElementById("image-url").value = "";
+                } else {
+                    alert("送信に失敗しました。ステータスコード: " + response.status);
+                }
+            })
+            .catch(error => {
+                alert("送信中にエラーが発生しました: " + error);
+            });
+        }
+    </script>
+</body>
+</html>
