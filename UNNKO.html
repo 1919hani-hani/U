@@ -4,35 +4,204 @@
     <meta charset="UTF-8">
     <title>Discord Webhook 送信ツール</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; }
-        textarea, input[type="text"] { width: 100%; padding: 10px; margin: 5px 0; }
-        button { padding: 10px 20px; font-size: 16px; }
-        label { font-weight: bold; display: block; margin-top: 10px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #d3d3d3;
+            margin: 0;
+            padding: 40px;
+        }
+
+        .container {
+            background: white;
+            max-width: 600px;
+            margin: auto;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+            display: block;
+            color: #555;
+        }
+
+        textarea, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            margin-bottom: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        .mode-select {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-select input {
+            display: none;
+        }
+
+        .mode-select label {
+            flex: 1;
+            background: #e0e0e0;
+            border-radius: 8px;
+            text-align: center;
+            padding: 10px;
+            cursor: pointer;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .mode-select input:checked + label {
+            background: #4f46e5;
+            color: white;
+            font-weight: bold;
+        }
+
+        button {
+            width: 100%;
+            background: #4f46e5;
+            color: white;
+            padding: 14px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #3730a3;
+        }
+
+        #admin-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #444;
+            color: white;
+            padding: 10px 14px;
+            font-size: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            opacity: 0.7;
+            z-index: 1000;
+        }
+
+        #admin-btn:hover {
+            opacity: 1;
+        }
+
+        /* 管理ログモーダル */
+        #log-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+        }
+
+        #log-content {
+            background: white;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #log-content h3 {
+            margin-top: 0;
+        }
+
+        #log-list {
+            white-space: pre-wrap;
+            font-size: 14px;
+            color: #222;
+        }
+
+        #close-log {
+            float: right;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+        }
+
+        #close-log:hover {
+            color: red;
+        }
     </style>
 </head>
 <body>
-    <h2>Discord Webhook 送信ツール</h2>
+    <div class="container">
+        <h2>Discord Webhook 送信ツール</h2>
 
-    <label for="webhook-url">Webhook URL</label>
-    <input type="text" id="webhook-url" placeholder="https://discord.com/api/webhooks/...">
+        <label for="webhook-url">Webhook URL</label>
+        <input type="text" id="webhook-url" placeholder="https://discord.com/api/webhooks/...">
 
-    <label>送信モード</label>
-    <input type="radio" name="mode" value="normal" checked> 通常メッセージのみ
-    <input type="radio" name="mode" value="embed"> 埋め込みのみ
-    <input type="radio" name="mode" value="both"> 両方送信
+        <label>送信モード</label>
+        <div class="mode-select">
+            <input type="radio" id="mode-normal" name="mode" value="normal" checked>
+            <label for="mode-normal">通常</label>
 
-    <label for="normal-message">通常メッセージ</label>
-    <textarea id="normal-message" rows="4"></textarea>
+            <input type="radio" id="mode-embed" name="mode" value="embed">
+            <label for="mode-embed">埋め込み</label>
 
-    <label for="embed-message">埋め込みメッセージ</label>
-    <textarea id="embed-message" rows="4"></textarea>
+            <input type="radio" id="mode-both" name="mode" value="both">
+            <label for="mode-both">両方</label>
+        </div>
 
-    <label for="image-url">埋め込み画像URL（任意）</label>
-    <input type="text" id="image-url" placeholder="https://example.com/image.png">
+        <label for="normal-message">通常メッセージ</label>
+        <textarea id="normal-message" rows="4"></textarea>
 
-    <button onclick="sendMessage()">送信</button>
+        <label for="embed-message">埋め込みメッセージ</label>
+        <textarea id="embed-message" rows="4"></textarea>
+
+        <label for="image-url">埋め込み画像URL（任意）</label>
+        <input type="text" id="image-url" placeholder="https://example.com/image.png">
+
+        <button onclick="sendMessage()">送信</button>
+    </div>
+
+    <!-- 管理者ログ表示 -->
+    <button id="admin-btn" onclick="showAdmin()">管理者</button>
+
+    <div id="log-modal">
+        <div id="log-content">
+            <span id="close-log" onclick="document.getElementById('log-modal').style.display='none'">✕ 閉じる</span>
+            <h3>送信ログ</h3>
+            <div id="log-list"></div>
+        </div>
+    </div>
 
     <script>
+        let adminAccess = false;
+        const logs = [];
+
+        function appendLog(entry) {
+            logs.push(entry);
+            const logText = logs.map((log, i) => `[${i + 1}] ${log}`).join("\n\n---\n\n");
+            document.getElementById("log-list").textContent = logText;
+        }
+
         function sendMessage() {
             const url = document.getElementById("webhook-url").value.trim();
             const normalText = document.getElementById("normal-message").value.trim();
@@ -47,23 +216,14 @@
 
             const data = {};
 
-            if (mode === "normal" || mode === "both") {
-                if (normalText) {
-                    data.content = normalText;
-                }
+            if ((mode === "normal" || mode === "both") && normalText) {
+                data.content = normalText;
             }
 
-            if (mode === "embed" || mode === "both") {
-                if (embedText) {
-                    const embed = { description: embedText };
-                    if (imageUrl) {
-                        embed.image = { url: imageUrl };
-                    }
-                    data.embeds = [embed];
-                } else if (mode === "embed") {
-                    alert("埋め込み本文を入力してください。");
-                    return;
-                }
+            if ((mode === "embed" || mode === "both") && embedText) {
+                const embed = { description: embedText };
+                if (imageUrl) embed.image = { url: imageUrl };
+                data.embeds = [embed];
             }
 
             if (Object.keys(data).length === 0) {
@@ -71,24 +231,46 @@
                 return;
             }
 
-            fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(data)
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert("メッセージを送信しました！");
-                    document.getElementById("normal-message").value = "";
-                    document.getElementById("embed-message").value = "";
-                    document.getElementById("image-url").value = "";
-                } else {
-                    alert("送信に失敗しました。ステータスコード: " + response.status);
+            fetch("https://api.ipify.org?format=json")
+                .then(res => res.json())
+                .then(ipData => {
+                    const ip = ipData.ip;
+                    const now = new Date().toLocaleString();
+                    const logEntry = `📅 ${now}\n🌐 IP: ${ip}\n📝 通常: ${normalText || 'なし'}\n📦 埋め込み: ${embedText || 'なし'}`;
+                    appendLog(logEntry);
+
+                    return fetch(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data)
+                    });
+                })
+                .then(response => {
+                    if (response.ok) {
+                        alert("✅ メッセージを送信しました！");
+                        document.getElementById("normal-message").value = "";
+                        document.getElementById("embed-message").value = "";
+                        document.getElementById("image-url").value = "";
+                    } else {
+                        alert("❌ 送信に失敗しました。ステータスコード: " + response.status);
+                    }
+                })
+                .catch(error => {
+                    alert("⚠️ エラーが発生しました: " + error);
+                });
+        }
+
+        function showAdmin() {
+            if (!adminAccess) {
+                const pass = prompt("管理者パスワードを入力してください:");
+                if (pass !== "1111") {
+                    alert("パスワードが間違っています。");
+                    return;
                 }
-            })
-            .catch(error => {
-                alert("送信中にエラーが発生しました: " + error);
-            });
+                adminAccess = true;
+            }
+
+            document.getElementById("log-modal").style.display = "block";
         }
     </script>
 </body>
